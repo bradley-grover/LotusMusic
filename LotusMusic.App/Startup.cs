@@ -58,6 +58,7 @@ internal static class Startup
 
             });
             services.AddNetworkServices(context.Configuration);
+            services.AddSingletons(context.Configuration);
             
         })
         .UseConsoleLifetime();
@@ -70,8 +71,12 @@ internal static class Startup
     {
         services.AddLavaNode(x =>
         {
-            x.SelfDeaf = true;
+            x.SelfDeaf = false;
         });
+    }
+    internal static void AddSingletons(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddSingleton<IAudioPlayer, LavalinkAudio>();
     }
 
     public static string GetToken() => Environment.GetEnvironmentVariable("DISCORD_TOKEN") ?? throw new InvalidOperationException("No discord bot token is set");
