@@ -37,39 +37,9 @@ internal class CommandHandler : DiscordClientService
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        Client.MessageReceived += Client_MessageReceived;
         Client.Ready += Client_Ready;
 
         await Service.AddModulesAsync(Assembly.GetEntryAssembly(), Provider);
-    }
-
-    public async ValueTask<string> GetPrefixAsync(IGuild guild)
-    {
-        var prefix = await Context.Prefixes.FindAsync(guild.Id);
-
-        if (prefix is null)
-        {
-            return Configuration.GetSection("Client-Configuration")["Prefix"];
-        }
-
-        return prefix.Value ?? Configuration.GetSection("Client-Configuration")["Prefix"];
-    }
-
-
-    private async Task Client_MessageReceived(SocketMessage arg)
-    {
-        if (arg is not SocketUserMessage message) return;
-        if (message.Source is not MessageSource.User) return;
-
-        int position = 0;
-
-        string prefix = await GetPrefixAsync((message.Channel as SocketGuildChannel)!.Guild);
-
-        if (!message.HasStringPrefix(prefix, ref position) && !message.HasMentionPrefix(Client.CurrentUser, ref position)) return;
-
-        var context = new SocketCommandContext(Client, message);
-        
-        await Service.ExecuteAsync(context, position, Provider);
     }
 
     private async Task Client_Ready()

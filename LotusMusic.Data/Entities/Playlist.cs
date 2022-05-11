@@ -1,17 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Victoria;
 
 namespace LotusMusic.Data.Entities;
 
 #nullable disable
 
-public class Prefix
+public class Playlist
 {
     [Key]
-    [Required]
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public ulong Id { get; set; }
+    public Guid Id { get; set; }
 
-    [StringLength(4, MinimumLength = 1)]
-    public string Value { get; set; }
+    [Required]
+    public string PlaylistName { get; set; }
+
+    [Required]
+    public List<LavaTrack> Tracks { get; set; } = new();
 }
