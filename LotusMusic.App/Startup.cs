@@ -35,7 +35,7 @@ internal static class Startup
                 AlwaysDownloadUsers = false,
                 MessageCacheSize = 0XC8
             };
-            config.Token = GetToken();
+            config.Token = GetToken(context.Configuration);
 
         })
         .UseCommandService((context, config) =>
@@ -79,5 +79,12 @@ internal static class Startup
         services.AddSingleton<IAudioPlayer, LavalinkAudio>();
     }
 
-    public static string GetToken() => Environment.GetEnvironmentVariable("DISCORD_TOKEN") ?? throw new InvalidOperationException("No discord bot token is set");
+    public static string GetToken(IConfiguration config)
+    {
+        if (config.GetSection("Client-Configuration").GetValue<bool>("Use-Test-Token"))
+        {
+            return Environment.GetEnvironmentVariable("DISCORD_TOKEN_DEBUG") ?? throw new InvalidOperationException("No debug token set");
+        }
+        return Environment.GetEnvironmentVariable("DISCORD_TOKEN") ?? throw new InvalidOperationException("No discord bot token is set");
+    }
 }
