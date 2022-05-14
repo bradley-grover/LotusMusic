@@ -12,11 +12,13 @@ public partial class LavalinkAudio : IAudioPlayer
 {
     public LavaNode Node { get; }
     private ILogger<IAudioPlayer> Logger { get; }
+    public DiscordSocketClient Client { get; }
 
-    public LavalinkAudio(LavaNode node, ILogger<IAudioPlayer> logger)
+    public LavalinkAudio(LavaNode node, ILogger<IAudioPlayer> logger, DiscordSocketClient client)
     {
         Node = node;
         Logger = logger;
+        Client = client;
         BindEvents();
     }
 

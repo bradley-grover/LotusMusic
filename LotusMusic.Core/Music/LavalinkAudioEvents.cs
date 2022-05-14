@@ -3,6 +3,7 @@ using System.Text;
 using Victoria.EventArgs;
 using Humanizer;
 using Victoria;
+using Discord.WebSocket;
 
 namespace LotusMusic.Core.Music;
 
@@ -11,9 +12,20 @@ public partial class LavalinkAudio
     private readonly StringBuilder statsBuilder = new();
     private void BindEvents()
     {
+        Client.UserVoiceStateUpdated += Client_UserVoiceStateUpdated;
         Node.OnTrackEnded += Node_OnTrackEnded;
         Node.OnStatsReceived += Node_OnStatsReceived;
         Node.OnTrackException += Node_OnTrackException;
+    }
+
+    private async Task Client_UserVoiceStateUpdated(SocketUser user, SocketVoiceState before, SocketVoiceState after)
+    {
+        if (user.Id != Client.CurrentUser.Id) return;
+        if (before.VoiceChannel is null) return;
+        if (after.VoiceChannel is null)
+        {
+            await LeaveAsync(before.VoiceChannel.Guild);
+        }
     }
 
     private async Task Node_OnTrackEnded(TrackEndedEventArgs args)
