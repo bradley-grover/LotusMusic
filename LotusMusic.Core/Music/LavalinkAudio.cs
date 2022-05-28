@@ -1,5 +1,7 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using LotusMusic.Core.Local;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using Victoria;
@@ -13,13 +15,17 @@ public partial class LavalinkAudio : IAudioPlayer
     public LavaNode Node { get; }
     private ILogger<IAudioPlayer> Logger { get; }
     public DiscordSocketClient Client { get; }
+    private ILocalSource LocalSource { get; }
 
-    public LavalinkAudio(LavaNode node, ILogger<IAudioPlayer> logger, DiscordSocketClient client)
+    public LavalinkAudio(LavaNode node, ILogger<IAudioPlayer> logger, DiscordSocketClient client,
+        ILocalSource localSource, IConfiguration configuration)
     {
         Node = node;
         Logger = logger;
         Client = client;
+        LocalSource = localSource;
         BindEvents();
+        LocalSource.Load(configuration);
     }
 
     public bool IsConnected(IGuild guild)
@@ -198,7 +204,57 @@ public partial class LavalinkAudio : IAudioPlayer
 
     public async Task<Embed> PlayLocalAsync(SocketGuildUser user, IGuild guild, string query)
     {
-        return MusicHandler.CreateBasicEmbed("Music - Play", "Feature is not supported yet");
+        if (user.VoiceChannel is null)
+        {
+            return MusicHandler.FromNotConnected("Music - Play");
+        }
+
+        if (!IsConnected(guild))
+        {
+            return MusicHandler.FromNotConnected("Music - Play");
+        }
+        
+        try
+        {
+            var player = Node.GetPlayer(guild);
+
+            LavaTrack? track;
+
+            string? trackPath = LocalSource.FindFile(query);
+
+            if (trackPath is null)
+            {
+                return MusicHandler.CreateBasicEmbed("Music - Play", "Could not find file locally");
+            }
+
+            var search = await Node.SearchAsync(SearchType.Direct, trackPath);
+
+            if (search.Status == SearchStatus.NoMatches)
+            {
+                return MusicHandler.CreateBasicEmbed("Music - Play", $"Could not find track for query: **{query}**");
+            }
+
+            track = search.Tracks.FirstOrDefault();
+
+            if (track is null)
+            {
+                return MusicHandler.CreateBasicEmbed("Music - Error", "Could not get track");
+            }
+
+            if ((player.Track != null && player.PlayerState is PlayerState.Playing) || player.PlayerState is PlayerState.Paused)
+            {
+                player.Queue.Enqueue(track);
+                return MusicHandler.CreateBasicEmbed("Music", $"{track?.Title} has been added to queue.");
+            }
+
+            await player.PlayAsync(track);
+
+            return await MusicHandler.FromPlayingTack("Play", track);
+        }
+        catch (Exception ex)
+        {
+            return MusicHandler.CreateBasicEmbed("Music - Error", ex.Message);
+        }
     }
 
     public Task<Embed> PlayMultipleTracksAsync(SocketGuildUser user, IGuild guild, IEnumerable<LavaTrack> track)
