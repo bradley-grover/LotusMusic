@@ -16,6 +16,7 @@ public class LocalSource : ILocalSource
             if (file.Tag.Title is not null)
             {
                 yield return file.Tag.Title;
+                continue;
             }
 
             yield return Path.GetFileNameWithoutExtension(fileName);

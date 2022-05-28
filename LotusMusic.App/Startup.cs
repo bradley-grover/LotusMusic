@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Victoria;
+using LotusMusic.Core.Local;
 
 namespace LotusMusic.App;
 
@@ -66,6 +67,7 @@ internal static class Startup
     internal static void AddHostedServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHostedService<CommandHandler>();
+        services.AddHostedService<StatusHandler>();
     }
     internal static void AddNetworkServices(this IServiceCollection services, IConfiguration configuration)
     {
@@ -76,6 +78,7 @@ internal static class Startup
     }
     internal static void AddSingletons(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddSingleton<ILocalSource, LocalSource>();
         services.AddSingleton<IAudioPlayer, LavalinkAudio>();
     }
 

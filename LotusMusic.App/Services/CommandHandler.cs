@@ -61,6 +61,7 @@ internal class CommandHandler : DiscordClientService
             var context = new SocketInteractionContext(Client, interaction);
             await Interactions.ExecuteCommandAsync(context, Provider);
         };
+        Client.ButtonExecuted += Client_ButtonExecuted;
 
         Logger.LogInformation("Attemping to connect to Lavalink");
         if (!Node.IsConnected)
@@ -68,5 +69,19 @@ internal class CommandHandler : DiscordClientService
             await Node.ConnectAsync();
         }
         Logger.LogInformation("After connect");
+    }
+
+    private async Task Client_ButtonExecuted(SocketMessageComponent arg)
+    {
+        if (IsPagedEmbed(arg.Data.CustomId))
+        {
+
+        }
+    }
+
+    static bool IsPagedEmbed(ReadOnlySpan<char> value)
+    {
+        return value.Contains(InteractionEvents.ButtonLeft.AsSpan(), StringComparison.Ordinal)
+            || value.Contains(InteractionEvents.ButtonRight.AsSpan(), StringComparison.Ordinal);
     }
 }
