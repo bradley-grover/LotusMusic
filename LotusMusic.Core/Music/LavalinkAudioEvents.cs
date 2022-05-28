@@ -20,7 +20,37 @@ public partial class LavalinkAudio
 
     private async Task Client_UserVoiceStateUpdated(SocketUser user, SocketVoiceState before, SocketVoiceState after)
     {
-        if (user.Id != Client.CurrentUser.Id) return;
+        if (user.Id == Client.CurrentUser.Id)
+        {
+            await HandleForClientDisconnectAsync(before, after);
+            return;
+        }
+
+        if (before.VoiceChannel is null)
+        {
+            return;
+        }
+
+        if (after.VoiceChannel is not null)
+        {
+            return;
+        }
+
+        if (!before.VoiceChannel.Users.Any(x => x.Id == Client.CurrentUser.Id))
+        {
+            return;
+        }
+
+        if (before.VoiceChannel.Users.Count > 1)
+        {
+            return;
+        }
+
+        await LeaveAsync(before.VoiceChannel.Guild);
+    }
+
+    private async Task HandleForClientDisconnectAsync(SocketVoiceState before, SocketVoiceState after)
+    {
         if (before.VoiceChannel is null) return;
         if (after.VoiceChannel is null)
         {
