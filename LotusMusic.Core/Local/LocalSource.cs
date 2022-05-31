@@ -15,7 +15,14 @@ public class LocalSource : ILocalSource
         {
             if (file.Tag.Title is not null)
             {
-                yield return file.Tag.Title;
+                if (file.Tag.Performers is not null && file.Tag.Performers.Length > 0)
+                {
+                    yield return $"{string.Join(", ", file.Tag.Performers)} - {file.Tag.Title}";
+                }
+                else
+                {
+                    yield return file.Tag.Title;
+                }
                 continue;
             }
 
@@ -100,13 +107,13 @@ public class LocalSource : ILocalSource
             
             for (int j = 0; j < files.Length; j++)
             {
-                if (!(files[j].Extension == ".mp3")) continue;
+                if (!IsSupportedFileTag(files[j].Extension)) continue;
 
-                File mp3;
+                File file;
                 try
                 {
-                    mp3 = File.Create(files[j].FullName);
-                    Files.Add((mp3, files[j].FullName));
+                    file = File.Create(files[j].FullName);
+                    Files.Add((file, files[j].FullName));
                 }
                 catch
                 {
@@ -115,4 +122,14 @@ public class LocalSource : ILocalSource
             }
         }
     }
+
+    private static bool IsSupportedFileTag(string tag)
+    {
+        return tag switch
+        {
+            ".flac" or ".mp3" or ".wav" => true,
+            _ => false,
+        };
+    }
+    
 }

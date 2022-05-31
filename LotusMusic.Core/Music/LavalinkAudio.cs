@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using Humanizer;
 using LotusMusic.Core.Local;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -96,54 +97,111 @@ public partial class LavalinkAudio : IAudioPlayer
         }
     }
 
-    public Task<Embed> PauseAsync(IGuild guild)
+    public async Task<Embed> PauseAsync(IGuild guild)
     {
-        throw new NotImplementedException();
+        if (!IsConnected(guild)) return MusicHandler.FromNotConnected("Pause");
+
+        try
+        {
+            var player = Node.GetPlayer(guild);
+
+            if (player.PlayerState is not PlayerState.Playing)
+            {
+                await player.PauseAsync();
+                return MusicHandler.CreateBasicEmbed("Music - Pause", "There is nothing to pause");
+            }
+
+            await player.PauseAsync();
+
+            var embed = MusicHandler.CreateBasicEmbed($"Music - Pause", $"**Paused:** {player.Track.Title}", await player.Track.FetchArtworkAsync());
+
+            return embed.ToEmbedBuilder()
+                .AddField("Time In: ", $"{player.Track.Position.ToString(@"hh\:mm\:ss")} / {player.Track.Duration.ToString(@"hh\:mm\:ss")}\n\n{MusicHandler.CreateProgressBar(player.Track)}")
+                .Build();
+        }
+        catch (Exception ex)
+        {
+            return MusicHandler.CreateBasicEmbed("Music - Pause", ex.Message);
+        }
     }
 
-    public Task<Embed> ResumeAsync(IGuild guild)
+    public async Task<Embed> ResumeAsync(IGuild guild)
     {
-        throw new NotImplementedException();
+        if (!IsConnected(guild)) return MusicHandler.FromNotConnected("Resume");
+        try
+        {
+            var player = Node.GetPlayer(guild);
+
+
+            if (player.PlayerState is PlayerState.Playing)
+            {
+                return MusicHandler.CreateBasicEmbed("Music - Resume", $"Player is currently playing", await player.Track.FetchArtworkAsync());
+            }
+
+            if (player.PlayerState is PlayerState.Paused)
+            {
+                await player.ResumeAsync();
+            }
+
+
+            var embed = MusicHandler.CreateBasicEmbed("Music - Resume", $"**Resumed:** {player.Track.Title}", await player.Track.FetchArtworkAsync());
+
+            return embed.ToEmbedBuilder()
+                .AddField("Time In: ", $"{player.Track.Position.ToString(@"hh\:mm\:ss")} / {player.Track.Duration.ToString(@"hh\:mm\:ss")}\n\n{MusicHandler.CreateProgressBar(player.Track)}")
+                .Build();
+        }
+        catch (Exception ex)
+        {
+            return MusicHandler.CreateBasicEmbed("Music - Resume", ex.Message);
+        }
     }
 
     #region List
 
     public async Task<Embed> ListAsync(IGuild guild)
     {
-        return await Task.FromResult(List(guild));
+        return await InternalListAsync(guild);
     }
 
-    private Embed List(IGuild guild)
+    private async ValueTask<Embed> InternalListAsync(IGuild guild)
     {
         if (!IsConnected(guild)) return MusicHandler.FromNotConnected("Queue");
         try
         {
             var descriptionBuilder = new StringBuilder();
 
-            var player = Node.GetPlayer(guild);
+            LavaPlayer player = Node.GetPlayer(guild);
+
 
             if (player.PlayerState is PlayerState.Playing)
             {
+              
                 if (player.Queue.Count < 1 && player.Track != null)
                 {
-                    return MusicHandler.CreateBasicEmbed($"Now Playing: {player.Track.Title}", "Nothing Else Is Queued.");
+                    return MusicHandler.CreateBasicEmbed("Music Playlist", $"Now Playing: {Format.Url(player.Track.Title, player.Track.Url)} \n\n" +
+                        $"{player?.Track?.Position.ToString(@"hh\:mm\:ss")} / {player?.Track?.Duration.ToString(@"hh\:mm\:ss")}\n{MusicHandler.CreateProgressBar(player?.Track!)}\n\n" +
+                        "Nothing else is queued", await player!.Track.FetchArtworkAsync());
                 }
 
                 var trackNum = 2;
 
                 foreach (LavaTrack track in player.Queue)
                 {
-                    descriptionBuilder.Append($"{trackNum++}: [{track.Title}]({track.Url}) - {track.Id}\n");
+                    descriptionBuilder.Append($"**[{trackNum++}]**: {track.Author ?? "Unknown"} - {track.Title}\n");
                 }
-                return MusicHandler.CreateBasicEmbed("Music Playlist", $"Now Playing: [{player?.Track?.Title}]({player?.Track?.Url}) \n{descriptionBuilder}");
+
+                return MusicHandler.CreateBasicEmbed("Music Playlist", $"Now Playing:{Format.Url(player.Track!.Title, player.Track.Url)}\n\n" +
+                    $"{player?.Track?.Position.ToString(@"hh\:mm\:ss")} / {player?.Track?.Duration.ToString(@"hh\:mm\:ss")}\n{MusicHandler.CreateProgressBar(player?.Track!)}\n\n" +
+                    descriptionBuilder.ToString(), await player!.Track.FetchArtworkAsync());
 
             }
+
             return MusicHandler.CreateBasicEmbed("Music - List", "Player doesn't seem to be playing anything right now.");
 
         }
         catch (Exception ex)
         {
-            return MusicHandler.CreateBasicEmbed("Music, List", ex.Message);
+            return MusicHandler.CreateBasicEmbed("Music - List", ex.Message);
         }
     }
     #endregion

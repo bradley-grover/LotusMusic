@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using LotusMusic.Core.Embeds;
 using LotusMusic.Core.Local;
+using LotusMusic.Core.Paging;
 using Microsoft.Extensions.DependencyInjection;
 using System.Text;
 
@@ -34,10 +35,10 @@ public class LocalSourceCommands : InteractionBase<LocalSourceCommands>
 
         foreach (var item in source)
         {
-            builder.AppendLine($"**{count++}** - **{item}**");
+            builder.AppendLine($"**[{count++}]** - {item}");
         }
 
-        var (Left, Right) = InteractionEvents.BuildPager(totalCount, 0, pageCount, InteractionEvents.LocalEmbed);
+        var (Left, Right) = Pager.BuildPager(totalCount, 0, pageCount, "local");
 
         var embed = new EmbedBuilder()
             .WithAuthor(DiscordClient.CurrentUser)

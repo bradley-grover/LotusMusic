@@ -42,6 +42,18 @@ public class MusicControlCommands : InteractionBase<MusicControlCommands>
         }
     }
 
+    [SlashCommand("pause", "pauses the currently playing track")]
+    public async Task PauseAsync()
+    {
+        await RespondAsync(embed: await Player.PauseAsync(Context.Guild));
+    }
+
+    [SlashCommand("resume", "resumes a track if it is paused")]
+    public async Task ResumeAsync()
+    {
+        await RespondAsync(embed: await Player.ResumeAsync(Context.Guild));
+    }
+
     [SlashCommand("dc", "disconnects from the voice channel")]
     public async Task LeaveAsync()
     {

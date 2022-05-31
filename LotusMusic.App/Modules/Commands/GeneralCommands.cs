@@ -47,4 +47,12 @@ public class GeneralCommands : InteractionBase<GeneralCommands>
 
         await RespondAsync(embed: builder.Build());
     }
+
+    [RequireOwner]
+    [SlashCommand("shutdown", "shuts down the bot")]
+    public static Task ShutdownAsync()
+    {
+        Environment.Exit(0);
+        return Task.CompletedTask;
+    }
 }

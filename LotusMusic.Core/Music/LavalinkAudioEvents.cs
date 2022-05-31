@@ -69,7 +69,6 @@ public partial class LavalinkAudio
 
         if (!player.Queue.TryDequeue(out var queueable))
         {
-            await player.TextChannel.SendMessageAsync("Finished music queue");
             // _ = InitiateDisconnectAsync(args.Player, TimeSpan.FromSeconds(10));
             return;
         }

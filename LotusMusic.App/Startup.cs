@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Victoria;
 using LotusMusic.Core.Local;
+using LotusMusic.Core.Paging;
 
 namespace LotusMusic.App;
 
@@ -80,6 +81,7 @@ internal static class Startup
     {
         services.AddSingleton<ILocalSource, LocalSource>();
         services.AddSingleton<IAudioPlayer, LavalinkAudio>();
+        services.AddSingleton<IPageResolver, PageResolver>();
     }
 
     public static string GetToken(IConfiguration config)

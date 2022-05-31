@@ -1,5 +1,6 @@
 ﻿using Discord;
 using LotusMusic.Core.Embeds;
+using System.Text.RegularExpressions;
 using Victoria;
 
 namespace LotusMusic.Core.Music;
@@ -34,5 +35,67 @@ public static class MusicHandler
     public static Embed FromAlreadyConnected(string channel)
     {
         return CreateBasicEmbed(channel, "Already connected to a voice channel");
+    }
+
+    //public static string CreateProgressBar(LavaTrack track)
+    //{
+    //    int size = 25;
+
+    //    char line = '▬';
+
+        
+
+    //    string slider = "🔘";
+
+    //    if (track is null)
+    //    {;
+    //        return $"{slider}{new string(line, size-1)}";
+    //    }
+
+    //    TimeSpan current = track.Duration != TimeSpan.FromSeconds(0) ? track.Position : track.Duration;
+
+    //    var total = track.Duration;
+
+    //    string value = Regex.Replace(new string(line, (int)Math.Round(size / 2 * (current / total))), ".$", slider);
+
+    //    var bar = current > total ?
+    //        (new string(line, size / 2 * 2), (current / total) * 100) 
+    //        :
+    //        (value, current / total);
+
+    //    if (bar.Item2.ToString().Contains(slider))
+    //    {
+    //        return $"{slider}{new string(line, size-1)}";
+    //    }
+
+    //    return $"{bar.Item1}";
+    //}
+
+    public static string CreateProgressBar(LavaTrack track)
+    {
+        int size = 25;
+        char line = '▬';
+        string slider = "🔘";
+
+        if (track.Position >= track.Duration)
+        {
+            return new string(line, size + 2);
+        }
+        else
+        {
+            var percentage = track.Position / track.Duration;
+
+            var progress = Math.Round(size * percentage);
+
+            var empty = size - progress;
+
+            var progressText = Regex.Replace(new string(line, (int)progress), ".$", slider);
+
+            var emptyProgressText = new string(line, (int)empty);
+
+            var bar = progressText + emptyProgressText;
+
+            return bar;
+        }
     }
 }
