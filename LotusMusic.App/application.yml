@@ -1,6 +1,6 @@
 server: # REST and WS server
   port: 80
-  address: 18.208.60.216
+  address: lotus-lavalink-deployment.herokuapp.com
 lavalink:
   server:
     password: "youshallnotpass"
