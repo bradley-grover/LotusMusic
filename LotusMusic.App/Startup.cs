@@ -74,6 +74,8 @@ internal static class Startup
     {
         services.AddLavaNode(x =>
         {
+            x.Hostname = "lava.link";
+            x.Port = 80;
             x.SelfDeaf = false;
         });
     }
