@@ -1,6 +1,6 @@
-﻿server: # REST and WS server
-  port: 2333
-  address: 0.0.0.0
+server: # REST and WS server
+  port: 80
+  address: lava.link
 lavalink:
   server:
     password: "youshallnotpass"
