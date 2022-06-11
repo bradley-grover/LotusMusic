@@ -23,7 +23,7 @@ internal static class StartupExtensions
         {
 #if !DEBUG
             AppDomain.CurrentDomain.SetData("DataDirectory", Directory.GetCurrentDirectory());
-            options.UseSqlite(context.Configuration.GetConnectionString("Default"));
+            options.UseSqlite(configuration.GetConnectionString("Default"));
 #else
             options.UseInMemoryDatabase($"Debug");
 #endif
